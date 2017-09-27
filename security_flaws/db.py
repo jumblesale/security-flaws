@@ -46,10 +46,17 @@ def insert_fixtures():
 
 def save_user(user_to_save: user.User):
     sql = '''
-        insert into `users` (`username`, `secret`)
-        values ("{}", "{}")
+        INSERT INTO `users` (`username`, `secret`)
+        VALUES ("{}", "{}");
     '''.format(user_to_save.username, user_to_save.secret)
-    return query_db(sql)
+    cursor = db.execute(sql)
+    last_id = cursor.lastrowid
+    saved_user = user.create_user(
+        user_to_save.username,
+        user_to_save.secret
+    )
+    saved_user.id = last_id
+    return saved_user
 
 
 def query_db(query, args=(), one=False):
@@ -80,6 +87,22 @@ def find_user_by_username(username: str) -> typing.Optional[user.User]:
     """
     sql = 'select * from users where username="{}"'.format(username)
     result = query_db(query=sql, one=True)
+    if result is None:
+        return None
+    retrieved_user = user.create_user(result['username'], result['secret'])
+    retrieved_user.id = result['id']
+    return retrieved_user
+
+
+def find_user_by_id(user_id: int) -> typing.Optional[user.User]:
+    """
+    given a username, see if they exist in the database. if they do,
+    return a User object representing this user. otherwise return None
+    :param id: the id of the user to search for
+    :return: None if the username does not exist, a User object if they do
+    """
+    sql = 'select * from users where id=?'
+    result = query_db(query=sql, one=True, args=[user_id])
     if result is None:
         return None
     retrieved_user = user.create_user(result['username'], result['secret'])
