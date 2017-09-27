@@ -7,7 +7,7 @@ LOG_FILE = os.path.join(LOG_DIR, 'log.log')
 
 def log(msg):
     with open(LOG_FILE, 'a') as f:
-        f.write(msg)
+        f.write(msg + '\n')
 
 
 def sql(*args):

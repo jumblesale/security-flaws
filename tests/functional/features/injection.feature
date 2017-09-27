@@ -7,5 +7,7 @@ Feature: performing sql injection
   Scenario: a user deletes all user data
     Given I am a client
       And I register with username "charles" and secret "t dog"
-     When I do an injection
-     Then user with username "charles" does not exist
+      And the user "charles" exists
+     When I register with username "hacker', 'secret'); delete from users; --" and secret "secret"
+     Then the user with username "charles" does not exist
+      And the user with username "hacker" does not exist

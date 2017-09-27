@@ -13,14 +13,14 @@ def create_user():
     data = parse_request_data(request)
     try:
         user = create_user_from_dict(data)
-        saved_user = db.save_user(user)
+        saved_user = db.save_user_in_a_very_unsafe_way(user)
     except ValueError as err:
         return create_json_response({'errors': err.args}, 400)
     print(user)
     return create_json_response(saved_user.__dict__, 201)
 
 
-@app.route('/user', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def get_user():
     user_name = request.args.get('username')
     if user_name is None:
@@ -51,7 +51,6 @@ def parse_request_data(rq):
 
 @app.teardown_appcontext
 def close_connection(exception):
-    print('tearing down')
     connection = db.get_db()
     if db is not None:
         connection.close()

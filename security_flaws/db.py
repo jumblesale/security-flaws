@@ -72,26 +72,7 @@ def insert_fixtures(db):
     execute_sql('insert_fixtures.sql', db)
 
 
-def save_user(user_to_save: user.User) -> user.User:
-    """
-    save a User object to the database
-    :param user_to_save: the User object to serialize and commit
-    :return: a User object representing the saved user
-    """
-    sql = '''
-        INSERT INTO `users` (`username`, `secret`)
-        VALUES ('{}', '{}');
-    '''.format(user_to_save.username, user_to_save.secret)
-    last_id = insert_into_db(sql)
-    saved_user = user.create_user(
-        user_to_save.username,
-        user_to_save.secret
-    )
-    saved_user.id = last_id
-    return saved_user
-
-
-def insert_into_db(query: str) -> int:
+def insert_into_db(query: str, args=()) -> int:
     """
     perform an INSERT query on the database
 
@@ -102,7 +83,7 @@ def insert_into_db(query: str) -> int:
     """
     connection = get_db()
     log.sql(query)
-    cursor = connection.executescript(query)
+    cursor = connection.execute(query, args)
     connection.commit()
     cursor.close()
     return cursor.lastrowid
@@ -117,11 +98,9 @@ def query_db(query: str, args=(), one=False):
     :param one: only return one result?
     :return: result[s] from the db, or None if the query did not receive any results
     """
-    connection = get_db()
-    cursor = connection.execute(query, args)
+    cursor = get_db().execute(query, args)
     log.sql(query, args)
     result = cursor.fetchall()
-    connection.commit()
     cursor.close()
     if result is None:
         return None
@@ -148,8 +127,8 @@ def find_user_by_username(username: str) -> typing.Optional[user.User]:
     :param username: the username to search for
     :return: None if the username does not exist, a User object if they do
     """
-    sql = 'select * from users where username="{}"'.format(username)
-    result = query_db(query=sql, one=True)
+    sql = 'select * from users where username=?'
+    result = query_db(query=sql, one=True, args=[username])
     if result is None:
         return None
     retrieved_user = user.create_user(result['username'], result['secret'])
@@ -171,3 +150,46 @@ def find_user_by_id(user_id: int) -> typing.Optional[user.User]:
     retrieved_user = user.create_user(result['username'], result['secret'])
     retrieved_user.id = result['id']
     return retrieved_user
+
+
+def save_user(user_to_save: user.User) -> user.User:
+    """
+    save a User object to the database
+    :param user_to_save: the User object to serialize and commit
+    :return: a User object representing the saved user
+    """
+    sql = 'INSERT INTO `users` (`username`, `secret`) VALUES (?, ?);'
+    last_id = insert_into_db(sql, [user_to_save.username, user_to_save.secret])
+    saved_user = user.create_user(
+        user_to_save.username,
+        user_to_save.secret
+    )
+    saved_user.id = last_id
+    return saved_user
+
+
+def save_user_in_a_very_unsafe_way(user_to_save: user.User) -> user.User:
+    """
+    save a User object to the database
+    :param user_to_save: the User object to serialize and commit
+    :return: a User object representing the saved user
+    """
+    # we put the user-provided data straight into the sql statement
+    sql = "INSERT INTO `users` (`username`, `secret`) VALUES ('{0}', '{1}');".format(
+        user_to_save.username, user_to_save.secret
+    )
+    log.sql(sql)
+
+    connection = get_db()
+    # executescript allows us to run more than one command at once
+    cursor = connection.executescript(sql)
+    connection.commit()
+    cursor.close()
+
+    last_id = cursor.lastrowid
+    saved_user = user.create_user(
+        user_to_save.username,
+        user_to_save.secret
+    )
+    saved_user.id = last_id
+    return saved_user

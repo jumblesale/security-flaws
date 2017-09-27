@@ -41,11 +41,9 @@ def step_impl(context, username, secret):
 
 
 @then(u'the user "{username}" exists')
+@given(u'the user "{username}" exists')
 def step_impl(context, username):
-    data = json.loads(context.response.get_data())
-    assert_that('id', is_in(data))
-    user_id = data['id']
-    response = context.client.get('/user/{}'.format(user_id))
+    response = context.client.get('/users?username={}'.format(username))
     assert_that(response.status_code, equal_to(200))
     data = json.loads(response.get_data())
     assert_that('username', is_in(data))
@@ -53,17 +51,12 @@ def step_impl(context, username):
     assert_that('secret', is_in(data))
 
 
-@then(u'user with username "{username}" does not exist')
+@then(u'the user with username "{username}" does not exist')
 def step_impl(context, username):
-    response = context.client.get('/user?username={}'.format(username))
+    response = context.client.get('/users?username={}'.format(username))
     assert_that(response.status_code, equal_to(404))
 
 
 @when(u'I request user with username "{username}"')
 def step_impl(context, username):
     context.response = context.client.get('/user?username={}'.format(username))
-
-
-@when(u'I do an injection')
-def step_impl(context):
-    raise NotImplementedError(u'STEP: When I do an injection')
