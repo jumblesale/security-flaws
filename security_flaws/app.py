@@ -1,10 +1,11 @@
-from flask import Flask, make_response, abort, request
+from flask import Flask, g, make_response, request
 import json
-import security_flaws.db as db
 from security_flaws.user import create_user_from_dict
 
-
+# initialise the flask app
 app = Flask(__name__)
+
+import security_flaws.db as db
 
 
 @app.route('/user', methods=['POST'])
@@ -15,18 +16,19 @@ def create_user():
         saved_user = db.save_user(user)
     except ValueError as err:
         return create_json_response({'errors': err.args}, 400)
+    print(user)
     return create_json_response(saved_user.__dict__, 201)
 
 
 @app.route('/user', methods=['GET'])
 def get_user():
-    user_id = int(request.args.get('id'))
-    if user_id is None:
-        return create_json_response({'errors': ['provide a user id']}, 404)
-    user = db.find_user_by_id(user_id)
+    user_name = request.args.get('username')
+    if user_name is None:
+        return create_json_response({'errors': ['provide a username']}, 404)
+    user = db.find_user_by_username(user_name)
     if user is None:
         return create_json_response(
-            {'errors': ['user with id {}'.format(user_id)]}, 404
+            {'errors': ['user with username {}'.format(user_name)]}, 404
         )
     return create_json_response(user.__dict__, 200)
 
@@ -45,3 +47,11 @@ def parse_request_data(rq):
         return json.loads(data)
     except Exception:
         return {}
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    print('tearing down')
+    connection = db.get_db()
+    if db is not None:
+        connection.close()

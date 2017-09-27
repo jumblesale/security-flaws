@@ -1,6 +1,7 @@
 from behave import *
-import security_flaws.db as db
 from security_flaws.app import app
+import security_flaws.db as db
+from hamcrest import assert_that, equal_to, is_in
 import json
 
 
@@ -17,7 +18,10 @@ def step_impl(context):
 
 @given(u'there are no existing users')
 def step_impl(context):
-    db.create_schema()
+    # this is cheating, the functional tests should not have this level
+    # of access to the system
+    connection = db._init_db()
+    db.create_schema(connection)
 
 
 @given(u'I am a client')
@@ -25,6 +29,7 @@ def step_impl(context):
     pass
 
 
+@given(u'I register with username "{username}" and secret "{secret}"')
 @when(u'I register with username "{username}" and secret "{secret}"')
 def step_impl(context, username, secret):
     payload = json.dumps({
@@ -32,17 +37,33 @@ def step_impl(context, username, secret):
         'secret': secret
     })
     context.response = context.client.post('/user', data=payload)
-    assert context.response.status_code == 201
+    assert_that(context.response.status_code, equal_to(201))
 
 
 @then(u'the user "{username}" exists')
 def step_impl(context, username):
     data = json.loads(context.response.get_data())
-    assert 'id' in data
+    assert_that('id', is_in(data))
     user_id = data['id']
-    response = context.client.get('/user?id={}'.format(user_id))
-    assert response.status_code == 200
+    response = context.client.get('/user/{}'.format(user_id))
+    assert_that(response.status_code, equal_to(200))
     data = json.loads(response.get_data())
-    assert 'username' in data
-    assert data['username'] == 'charles'
-    assert 'secret' in data
+    assert_that('username', is_in(data))
+    assert_that(data['username'] == 'charles')
+    assert_that('secret', is_in(data))
+
+
+@then(u'user with username "{username}" does not exist')
+def step_impl(context, username):
+    response = context.client.get('/user?username={}'.format(username))
+    assert_that(response.status_code, equal_to(404))
+
+
+@when(u'I request user with username "{username}"')
+def step_impl(context, username):
+    context.response = context.client.get('/user?username={}'.format(username))
+
+
+@when(u'I do an injection')
+def step_impl(context):
+    raise NotImplementedError(u'STEP: When I do an injection')

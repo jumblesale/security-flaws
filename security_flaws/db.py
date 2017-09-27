@@ -1,7 +1,9 @@
+from security_flaws.app import app, g
 import sqlite3
 import os
 import typing
 import security_flaws.user as user
+import security_flaws.log as log
 
 # the root dir is one directory above the current directory
 ROOT_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
@@ -10,47 +12,77 @@ DATABASE_PATH = os.path.join(ROOT_DIR, DB_NAME)
 # sql definitions are in the 'sql' directory
 SQL_PATH = os.path.join(ROOT_DIR, 'sql')
 
-# obtain a connection to the database
-db = sqlite3.connect(DATABASE_PATH)
-# as in the docs, this gives us dicts back instead of tuples
-db.row_factory = sqlite3.Row
+
+def get_db():
+    """
+    get a per-request connection to the db
+    :return: an sqlite3 db connection
+    """
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = _init_db()
+        g._database = db
+    return db
 
 
-def execute_sql(sql_path):
+def _init_db():
+    # obtain a connection to the database
+    db = sqlite3.connect(DATABASE_PATH)
+    # as in the docs, this gives us dicts back instead of tuples
+    db.row_factory = sqlite3.Row
+    return db
+
+
+def close_connection():
+    """
+    close this request's connection
+    :return: None
+    """
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+
+def execute_sql(sql_path, db):
     """
     execute the contents of a script in the parent sql directory
-    
-    :param sql_path: the path to the sql script 
-    :return: None 
+
+    :param sql_path: the path to the sql script
+    :param db: the database connection to use
+    :return: None
     """
     with open(os.path.join(SQL_PATH, sql_path), 'r') as f:
         sql = f.read()
         db.executescript(sql)
 
 
-def create_schema():
+def create_schema(db):
     """
     create the schema for the database by running the create table script
     :return: None
     """
-    execute_sql('create_tables.sql')
+    execute_sql('create_tables.sql', db)
 
 
-def insert_fixtures():
+def insert_fixtures(db):
     """
     insert example data for testing
     :return: None
     """
-    execute_sql('insert_fixtures.sql')
+    execute_sql('insert_fixtures.sql', db)
 
 
-def save_user(user_to_save: user.User):
+def save_user(user_to_save: user.User) -> user.User:
+    """
+    save a User object to the database
+    :param user_to_save: the User object to serialize and commit
+    :return: a User object representing the saved user
+    """
     sql = '''
         INSERT INTO `users` (`username`, `secret`)
-        VALUES ("{}", "{}");
+        VALUES ('{}', '{}');
     '''.format(user_to_save.username, user_to_save.secret)
-    cursor = db.execute(sql)
-    last_id = cursor.lastrowid
+    last_id = insert_into_db(sql)
     saved_user = user.create_user(
         user_to_save.username,
         user_to_save.secret
@@ -59,7 +91,24 @@ def save_user(user_to_save: user.User):
     return saved_user
 
 
-def query_db(query, args=(), one=False):
+def insert_into_db(query: str) -> int:
+    """
+    perform an INSERT query on the database
+
+    like query_db but it commits and returns the last inserted row id
+    :param query: the sql query to run
+    :param args: arguments to be used as bound parameters
+    :return: the last inserted row id
+    """
+    connection = get_db()
+    log.sql(query)
+    cursor = connection.executescript(query)
+    connection.commit()
+    cursor.close()
+    return cursor.lastrowid
+
+
+def query_db(query: str, args=(), one=False):
     """
     run an sql query against the database
     
@@ -68,14 +117,28 @@ def query_db(query, args=(), one=False):
     :param one: only return one result?
     :return: result[s] from the db, or None if the query did not receive any results
     """
-    cursor = db.execute(query, args)
+    connection = get_db()
+    cursor = connection.execute(query, args)
+    log.sql(query, args)
     result = cursor.fetchall()
+    connection.commit()
     cursor.close()
     if result is None:
         return None
     if one is True:
-        return result[0]
+        if len(result) > 0:
+            return result[0]
+        return None
     return result
+
+
+def get_user_count() -> int:
+    """
+    get a count of the users currently in the db
+    :return: an integer count of the number of users
+    """
+    result = query_db('select count(*) as c from users;', one=True)
+    return int(result['c'])
 
 
 def find_user_by_username(username: str) -> typing.Optional[user.User]:
@@ -108,5 +171,3 @@ def find_user_by_id(user_id: int) -> typing.Optional[user.User]:
     retrieved_user = user.create_user(result['username'], result['secret'])
     retrieved_user.id = result['id']
     return retrieved_user
-
-

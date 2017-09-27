@@ -2,4 +2,6 @@
 db.sqlite
 venv/
 *.pyc
+logs/*
+!logs/.gitkeep
 
