@@ -14,6 +14,6 @@ def sql(*args):
     query = args[0]
     msg = '[SQL] ' + query
     if len(args) > 1:
-        args_list = ','.join(args[1])
+        args_list = ','.join(map(str, args[1]))
         msg += ' (' + args_list + ')'
     log(msg)

@@ -31,16 +31,31 @@ def _create_registration_error_response(errors: [str]):
 
 
 @app.route('/users', methods=['GET'])
-def get_user():
+def get_user_by_username():
     user_name = request.args.get('username')
     if user_name is None:
         return create_json_response({'errors': ['provide a username']}, 404)
     user = db.find_user_by_username(user_name)
     if user is None:
         return create_json_response(
-            {'errors': ['user with username {}'.format(user_name)]}, 404
+            {'errors': ['user with username {} does not exist'.format(user_name)]}, 404
         )
     return create_json_response(user.__dict__, 200)
+
+
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    user = db.find_user_by_id(user_id)
+    if user is None:
+        return create_json_response(
+            {'errors': ['user with id {} does not exist'.format(user_id)]}, 404
+        )
+    return create_json_response(user.__dict__, 200)
+
+
+@app.route('/register', methods=['GET'])
+def register():
+    pass
 
 
 def create_json_response(payload, status_code):
