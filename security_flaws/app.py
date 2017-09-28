@@ -13,11 +13,21 @@ def create_user():
     data = parse_request_data(request)
     try:
         user = create_user_from_dict(data)
+        if db.find_user_by_username(user.username) is not None:
+            return _create_registration_error_response(
+                ['username {} already exists'.format(user.username)]
+            )
         saved_user = db.save_user_in_a_very_unsafe_way(user)
     except ValueError as err:
-        return create_json_response({'errors': err.args}, 400)
-    print(user)
+        return _create_registration_error_response(err.args)
     return create_json_response(saved_user.__dict__, 201)
+
+
+def _create_registration_error_response(errors: [str]):
+    return create_json_response(
+        {'errors': errors},
+        400
+    )
 
 
 @app.route('/users', methods=['GET'])

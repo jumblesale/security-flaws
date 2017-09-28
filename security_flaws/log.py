@@ -12,5 +12,8 @@ def log(msg):
 
 def sql(*args):
     query = args[0]
-    log(query)
-    # log(args[0] + '(' + ','.join(args[1:]) + ')')
+    msg = '[SQL] ' + query
+    if len(args) > 1:
+        args_list = ','.join(args[1])
+        msg += ' (' + args_list + ')'
+    log(msg)

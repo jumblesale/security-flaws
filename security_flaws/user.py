@@ -1,4 +1,5 @@
 import hashlib
+import re
 
 
 class User:
@@ -24,6 +25,13 @@ def encrypt_secret(plaintext: str) -> str:
     return hash.hexdigest()
 
 
+def validate_secret(plaintext: str) -> bool:
+    result = re.match('^[a-z0-9 ]{1,16}$', plaintext)
+    if result is None:
+        return False
+    return True
+
+
 def create_user(username: str, plaintext_secret: str) -> User:
     """
     validate and create a User object
@@ -44,6 +52,11 @@ def create_user_from_dict(d: dict) -> User:
     for field in User.required_fields:
         if field not in d.keys():
             errors.append('{} was not provided'.format(field))
+
+    if 'secret' in d:
+        if validate_secret(d['secret']) is False:
+            errors.append('{} is not a valid secret'.format(d['secret']))
+
     if errors:
         raise ValueError(*errors)
     return create_user(d['username'], d['secret'])

@@ -37,7 +37,6 @@ def step_impl(context, username, secret):
         'secret': secret
     })
     context.response = context.client.post('/user', data=payload)
-    assert_that(context.response.status_code, equal_to(201))
 
 
 @then(u'the user "{username}" exists')
@@ -60,3 +59,9 @@ def step_impl(context, username):
 @when(u'I request user with username "{username}"')
 def step_impl(context, username):
     context.response = context.client.get('/user?username={}'.format(username))
+
+
+@given(u'I get a "{status}" response')
+@then(u'I get a "{status}" response')
+def step_impl(context, status):
+    assert_that(context.response.status_code, equal_to(int(status)))
