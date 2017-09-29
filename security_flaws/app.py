@@ -42,9 +42,9 @@ def create_note():
     if 'note' not in data:
         errors.append('No note provided')
     if from_user is None:
-        errors.append('From user "{}" does not exist'.format(data['from_username']))
+        errors.append('Originating user "{}" does not exist'.format(data['from_username']))
     if to_user is None:
-        errors.append('To user "{}" does not exist'.format(data['to_username']))
+        errors.append('Recipient user "{}" does not exist'.format(data['to_username']))
     if errors:
         return _create_error_response(errors)
     note = create_note_entity(from_user, to_user, data['note'])
@@ -119,10 +119,11 @@ def register():
 def user_page():
     user_id = request.args.get('id')
     user = db.find_user_by_id(user_id)
+    notes = db.find_notes_sent_to_user_id(user_id)
     if user is None:
         return abort(404)
     title = "{}'s user page".format(user.username)
-    return render_template('user_page.html', user=user, title=title)
+    return render_template('user_page.html', user=user, title=title, notes=notes)
 
 
 def create_json_response(payload, status_code=200):

@@ -2,11 +2,37 @@
 {% block title %}User page{% endblock %}
 
 {% block body %}
-<h2>User details:</h2>
-<ul>
-    <li><strong>Username:</strong> {{ user.username }}</li>
-    <li><strong>Secret:</strong> {{ user.secret }}</li>
-</ul>
+<div id="details">
+    <h2>User details:</h2>
+    <ul>
+        <li><strong>Username:</strong> {{ user.username }}</li>
+        <li><strong>Secret:</strong> {{ user.secret }}</li>
+    </ul>
+</div>
 
-<input type="hidden" id="from_username" value="user.username" />
+<div id="send_note">
+    <h2>Send a note:</h2>
+    <form id="message_form">
+        <label for="to_username">Recipient's username:</label>
+        <input name="to_username" id="to_username" type="text" />
+        <br />
+        <label for="message">Message:</label>
+        <textarea id="message" name="message"></textarea>
+        <br />
+        <input type="hidden" id="from_username" value="{{user.username}}" />
+        <input type="submit" value="Send note" />
+    </form>
+    <div id="sent">Sent!</div>
+    <div id="errors"><ul></ul></div>
+</div>
+
+<div id="received_notes">
+    <h2>Received notes:</h2>
+    <dl>
+        {% for note in notes %}
+            <dt>{{ note.from_username }}</dt>
+            <dd>{{ note.note|safe }}</dd>
+        {% endfor %}
+    </dl>
+</div>
 {% endblock %}
