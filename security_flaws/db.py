@@ -223,7 +223,7 @@ def find_notes_sent_to_user_id(user_id: int) -> [str]:
     :param user_id: the id of the user to search
     :return: a list of dicts of (note, from_username) pairs
     """
-    sql = 'select `note`, `from_username` from notes where to_user_id=? ORDER BY `id` DESC'
+    sql = 'SELECT `note`, `from_username` FROM `notes` WHERE to_user_id=? ORDER BY `id` DESC'
     result = query_db(query=sql, args=[user_id])
     if result is None:
         return []
@@ -231,3 +231,15 @@ def find_notes_sent_to_user_id(user_id: int) -> [str]:
     for row in result:
         notes.append({'note': row['note'], 'from_username': row['from_username']})
     return notes
+
+
+def auth(username: str, secret: str) -> bool:
+    """
+    check if a given username / secret matches what is in the database
+    :param username:
+    :param secret:
+    :return: true on success false on failure
+    """
+    sql = 'SELECT COUNT(*) as c FROM users WHERE username=? AND secret=?'
+    result = query_db(sql, one=True, args=[username, secret])
+    return result['c'] == 1

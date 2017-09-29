@@ -93,6 +93,7 @@ def step_impl(context, note, to_username):
     context.response = context.client.post('/notes', data=payload)
 
 
+@then(u'that request is unsuccessful ({status})')
 @then(u'that request is successful ({status})')
 def step_impl(context, status):
     assert_that(context.response.status_code, equal_to(int(status)))
@@ -109,3 +110,12 @@ def step_impl(context, username, count):
 @then(u'the first note contains "{text}"')
 def step_impl(context, text):
     assert_that(context.notes[0]['note'], equal_to(text))
+
+
+@when(u'I log in with username "{username}" and secret "{secret}"')
+def step_impl(context, username, secret):
+    payload = json.dumps({
+        'username': username,
+        'secret':   secret
+    })
+    context.response = context.client.post('/auth', data=payload)

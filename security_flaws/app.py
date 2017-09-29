@@ -1,6 +1,7 @@
 from flask import Flask, g, make_response, request, render_template, abort, redirect
 import json
 from security_flaws.user import create_user_from_dict as create_user_entity_from_dict
+import security_flaws.user as user
 from security_flaws.note import create_note as create_note_entity
 import security_flaws.log as log
 
@@ -111,8 +112,13 @@ def get_user_by_id(user_id):
 
 
 @app.route('/login', methods=['GET'])
+def login():
+    return render_template('login.html')
+
+
+@app.route('/register', methods=['GET'])
 def register():
-    return render_template('login.html', header='Log in')
+    return render_template('register.html')
 
 
 @app.route('/user_page', methods=['GET'])
@@ -124,6 +130,22 @@ def user_page():
         return abort(404)
     title = "{}'s user page".format(user.username)
     return render_template('user_page.html', user=user, title=title, notes=notes)
+
+
+@app.route('/auth', methods=['POST'])
+def auth():
+    log.log('received auth request')
+    data = parse_request_data(request)
+    errors = []
+    if 'username' not in data:
+        errors.append('No username provided')
+    if 'secret' not in data:
+        errors.append('No secret provided')
+    success = db.auth(data['username'], user.encrypt_secret(data['secret']))
+    if success:
+        existing_user = db.find_user_by_username(data['username'])
+        return create_json_response(existing_user.__dict__, 200)
+    return create_json_response({}, 401)
 
 
 def create_json_response(payload, status_code=200):

@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
-{% block title %}Log in to account{% endblock %}
-{% block header %}Log in{% endblock %}
+{% block title %}Register new user{% endblock %}
+{% block header %}Register{% endblock %}
 {% block body %}
-<form id="login">
+<form id="registration">
     <label for="username">Username:</label>
     <input type="text" name="username" id="username" />
     <br />
@@ -11,7 +11,7 @@
     <br />
     <input type="submit" />
 </form>
-<p>Not a user? <a href="register">Register</a> an account</p>
+<p>Already a user? <a href="login">Log in</a> to your account</p>
 <div id="errors">
     <ul></ul>
 </div>

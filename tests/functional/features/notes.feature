@@ -1,4 +1,4 @@
-Feature: performing sql injection
+Feature: managing user notes
 
   Background: there is no data in the service
     Given the server is running
