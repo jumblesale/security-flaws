@@ -14,7 +14,7 @@ import security_flaws.db as db
 
 @app.route('/')
 def index():
-    return redirect('login')
+    return redirect('register')
 
 
 @app.route('/user', methods=['POST'])
