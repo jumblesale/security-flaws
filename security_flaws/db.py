@@ -3,6 +3,7 @@ import sqlite3
 import os
 import typing
 import security_flaws.user as user
+import security_flaws.note as note
 import security_flaws.log as log
 
 # the root dir is one directory above the current directory
@@ -195,3 +196,38 @@ def save_user_in_a_very_unsafe_way(user_to_save: user.User) -> user.User:
     )
     saved_user.id = last_insert_row_id
     return saved_user
+
+
+def save_note(note_to_save: note.Note) -> note.Note:
+    """
+    save a new note
+    :param note_to_save: a Note object to save
+    :return: a Note object representing the saved note
+    """
+    sql = 'INSERT INTO `notes` (`from_user_id`, `from_username`, `to_user_id`, `note`) VALUES (?, ?, ?, ?);'
+    last_id = insert_into_db(
+        sql, [note_to_save.from_user.id,
+              note_to_save.from_user.username,
+              note_to_save.to_user.id,
+              note_to_save.note]
+    )
+
+    saved_note = note_to_save
+    saved_note.id = last_id
+    return saved_note
+
+
+def find_notes_sent_to_user_id(user_id: int) -> [str]:
+    """
+    find all notes where the to user has the given username
+    :param user_id: the id of the user to search
+    :return: a list of dicts of (note, from_username) pairs
+    """
+    sql = 'select `note`, `from_username` from notes where to_user_id=? ORDER BY `id` DESC'
+    result = query_db(query=sql, args=[user_id])
+    if result is None:
+        return []
+    notes = []
+    for row in result:
+        notes.append({'note': row['note'], 'from_username': row['from_username']})
+    return notes

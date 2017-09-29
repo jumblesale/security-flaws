@@ -24,6 +24,17 @@ def step_impl(context):
     db.create_schema(connection)
 
 
+@given(u'there are fixtures in the db')
+def step_impl(context):
+    context.execute_steps(u"""
+        Given there are no existing users
+    """)
+    with app.app_context():
+        connection = db.get_db()
+        db.insert_fixtures(connection)
+        db.close_connection()
+
+
 @given(u'I am a client')
 def step_impl(context):
     pass
@@ -65,3 +76,36 @@ def step_impl(context, username):
 @then(u'I get a "{status}" response')
 def step_impl(context, status):
     assert_that(context.response.status_code, equal_to(int(status)))
+
+
+@given(u'I am user "{username}"')
+def step_impl(context, username):
+    context.username = username
+
+
+@given(u'I send a note "{note}" to user "{to_username}"')
+def step_impl(context, note, to_username):
+    payload = json.dumps({
+        'note': note,
+        'to_username': to_username,
+        'from_username': context.username
+    })
+    context.response = context.client.post('/notes', data=payload)
+
+
+@then(u'that request is successful ({status})')
+def step_impl(context, status):
+    assert_that(context.response.status_code, equal_to(int(status)))
+
+
+@then(u'user "{username}" has {count} notes')
+def step_impl(context, username, count):
+    context.response = context.client.get('/notes?username={}'.format(username))
+    data = json.loads(context.response.get_data())
+    assert_that(len(data['notes']), equal_to(int(count)))
+    context.notes = data['notes']
+
+
+@then(u'the first note contains "{text}"')
+def step_impl(context, text):
+    assert_that(context.notes[0]['note'], equal_to(text))

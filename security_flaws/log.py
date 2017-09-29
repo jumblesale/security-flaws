@@ -10,6 +10,11 @@ def _write(msg):
         f.write(msg + '\n')
 
 
+def response(status_code, data):
+    msg = '[RSP] [{}] {}'.format(status_code, data)
+    _write(msg)
+
+
 def sql(*args):
     query = args[0]
     msg = '[SQL] ' + query
