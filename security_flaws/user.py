@@ -54,8 +54,10 @@ def create_user_from_dict(d: dict) -> User:
             errors.append('{} was not provided'.format(field))
 
     if 'secret' in d:
-        if validate_secret(d['secret']) is False:
-            errors.append('{} is not a valid secret'.format(d['secret']))
+        if d['secret'] == '':
+            errors.append('no secret provided')
+        elif validate_secret(d['secret']) is False:
+            errors.append('"{}" is not a valid secret'.format(d['secret']))
 
     if errors:
         raise ValueError(*errors)

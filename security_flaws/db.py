@@ -183,13 +183,15 @@ def save_user_in_a_very_unsafe_way(user_to_save: user.User) -> user.User:
     connection = get_db()
     # executescript allows us to run more than one command at once
     cursor = connection.executescript(sql)
+    # get the last inserted id
+    last_insert_row = query_db('SELECT last_insert_rowid() AS id', one=True)
+    last_insert_row_id = last_insert_row['id']
     connection.commit()
     cursor.close()
 
-    last_id = cursor.lastrowid
     saved_user = user.create_user(
         user_to_save.username,
         user_to_save.secret
     )
-    saved_user.id = last_id
+    saved_user.id = last_insert_row_id
     return saved_user

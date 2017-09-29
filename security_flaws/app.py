@@ -1,6 +1,7 @@
-from flask import Flask, g, make_response, request
+from flask import Flask, g, make_response, request, render_template
 import json
 from security_flaws.user import create_user_from_dict
+import security_flaws.log as log
 
 # initialise the flask app
 app = Flask(__name__)
@@ -10,12 +11,13 @@ import security_flaws.db as db
 
 @app.route('/user', methods=['POST'])
 def create_user():
+    log.log('received user creation request with data: {}'.format(request.get_data()))
     data = parse_request_data(request)
     try:
         user = create_user_from_dict(data)
         if db.find_user_by_username(user.username) is not None:
             return _create_registration_error_response(
-                ['username {} already exists'.format(user.username)]
+                ['Username {} already exists'.format(user.username)]
             )
         saved_user = db.save_user_in_a_very_unsafe_way(user)
     except ValueError as err:
@@ -34,11 +36,11 @@ def _create_registration_error_response(errors: [str]):
 def get_user_by_username():
     user_name = request.args.get('username')
     if user_name is None:
-        return create_json_response({'errors': ['provide a username']}, 404)
+        return create_json_response({'errors': ['Provide a username']}, 404)
     user = db.find_user_by_username(user_name)
     if user is None:
         return create_json_response(
-            {'errors': ['user with username {} does not exist'.format(user_name)]}, 404
+            {'errors': ['User with username {} does not exist'.format(user_name)]}, 404
         )
     return create_json_response(user.__dict__, 200)
 
@@ -48,14 +50,14 @@ def get_user_by_id(user_id):
     user = db.find_user_by_id(user_id)
     if user is None:
         return create_json_response(
-            {'errors': ['user with id {} does not exist'.format(user_id)]}, 404
+            {'errors': ['User with id {} does not exist'.format(user_id)]}, 404
         )
     return create_json_response(user.__dict__, 200)
 
 
 @app.route('/register', methods=['GET'])
 def register():
-    pass
+    return render_template('login.html')
 
 
 def create_json_response(payload, status_code):

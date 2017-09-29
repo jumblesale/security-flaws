@@ -5,7 +5,7 @@ LOG_DIR = os.path.join(ROOT_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'log.log')
 
 
-def log(msg):
+def _write(msg):
     with open(LOG_FILE, 'a') as f:
         f.write(msg + '\n')
 
@@ -16,4 +16,8 @@ def sql(*args):
     if len(args) > 1:
         args_list = ','.join(map(str, args[1]))
         msg += ' (' + args_list + ')'
-    log(msg)
+    _write(msg)
+
+
+def log(msg):
+    _write('[LOG] ' + msg)
