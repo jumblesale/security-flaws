@@ -1,4 +1,4 @@
-from flask import Flask, g, make_response, request, render_template
+from flask import Flask, g, make_response, request, render_template, abort, redirect
 import json
 from security_flaws.user import create_user_from_dict
 import security_flaws.log as log
@@ -7,6 +7,11 @@ import security_flaws.log as log
 app = Flask(__name__)
 
 import security_flaws.db as db
+
+
+@app.route('/')
+def index():
+    return redirect('login')
 
 
 @app.route('/user', methods=['POST'])
@@ -55,9 +60,19 @@ def get_user_by_id(user_id):
     return create_json_response(user.__dict__, 200)
 
 
-@app.route('/register', methods=['GET'])
+@app.route('/login', methods=['GET'])
 def register():
-    return render_template('login.html')
+    return render_template('login.html', header='Log in')
+
+
+@app.route('/user_page', methods=['GET'])
+def user_page():
+    user_id = request.args.get('id')
+    user = db.find_user_by_id(user_id)
+    if user is None:
+        return abort(404)
+    title = "{}'s user page".format(user.username)
+    return render_template('user_page.html', user=user, title=title)
 
 
 def create_json_response(payload, status_code):

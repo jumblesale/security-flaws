@@ -11,7 +11,7 @@ const submit_registration_form = (function() {
             data = JSON.parse(success);
             console.log(success);
             $errors.hide();
-            window.location.href = 'user_page.html?id=' + data.id
+            window.location.href = 'user_page?id=' + data.id;
         }, function(failure) {
             const response = JSON.parse(failure.response);
             console.log(response);

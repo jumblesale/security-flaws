@@ -1,8 +1,6 @@
-<!doctype html>
-<html>
-<head>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block body %}
 <form id="registration">
     <label for="username">Username:</label>
     <input type="text" name="username" id="username" />
@@ -15,9 +13,4 @@
 <div id="errors">
     <ul></ul>
 </div>
-<script src="static/js/zepto.min.js" type="text/javascript"></script>
-<script src="static/js/zepto.callbacks.js" type="text/javascript"></script>
-<script src="static/js/zepto.deferred.js" type="text/javascript"></script>
-<script src="static/js/scripts.js" type="text/javascript"></script>
-</body>
-</html>
+{% endblock %}

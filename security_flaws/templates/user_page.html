@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}User page{% endblock %}
+
+{% block body %}
+<h2>User details:</h2>
+<ul>
+    <li><strong>Username:</strong> {{ user.username }}</li>
+    <li><strong>Secret:</strong> {{ user.secret }}</li>
+</ul>
+{% endblock %}
