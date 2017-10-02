@@ -250,7 +250,7 @@ def get_users() -> list:
     get a list of all users. only retrieves user names
     :return: a list of users in the db 
     """
-    sql = 'SELECT `username` FROM users;'
+    sql = 'SELECT `username` FROM users ORDER BY username ASC;'
     result = query_db(sql)
     users = []
     for r in result:
