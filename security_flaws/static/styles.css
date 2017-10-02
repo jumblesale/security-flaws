@@ -1,0 +1,28 @@
+body {
+    font-family: 'Slabo 27px', serif;
+    padding: 0;
+    margin: 0;
+}
+
+label {
+    width: 160px;
+    float: left;
+}
+
+#header {
+    padding: 8px 16px;
+    background-color: #44929f;
+    color: white;
+}
+
+#content {
+    padding: 8px 16px;
+}
+
+input[type="text"] input[type="password"] {
+    width: 150px;
+}
+
+a {
+    color: #ddc963;
+}
