@@ -42,6 +42,8 @@ def create_note():
     errors = []
     if 'note' not in data:
         errors.append('No note provided')
+    if not data['note']:
+        errors.append('Message cannot be empty')
     if from_user is None:
         errors.append('Originating user "{}" does not exist'.format(data['from_username']))
     if to_user is None:

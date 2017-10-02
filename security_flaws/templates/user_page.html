@@ -38,7 +38,7 @@
     <h2>Received notes:</h2>
     <dl>
         {% for note in notes %}
-            <dt>{{ note.from_username }}</dt>
+            <dt><strong>{{ note.from_username }}</strong>:</dt>
             <dd>{{ note.note|safe }}</dd>
         {% endfor %}
     </dl>
