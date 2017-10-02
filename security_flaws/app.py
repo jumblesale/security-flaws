@@ -135,7 +135,9 @@ def user_page():
     if user is None:
         return abort(404)
     title = "{}'s user page".format(user.username)
-    return render_template('user_page.html', user=user, title=title, notes=notes)
+    return render_template(
+        'user_page.html', user=user, title=title, notes=notes, users=db.get_users()
+    )
 
 
 @app.route('/auth', methods=['POST'])

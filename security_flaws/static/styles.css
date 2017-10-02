@@ -19,10 +19,26 @@ label {
     padding: 8px 16px;
 }
 
-input[type="text"] input[type="password"] {
+input[type="text"], input[type="password"], select, option, textarea {
     width: 150px;
 }
 
 a {
     color: #005b96;
+}
+
+#sent {
+    border: 3px solid #7bc043;
+    background-color: #3D6021;
+    padding: 16px;
+    color: white;
+    font-weight: bold;
+    position: absolute;
+    left: 400px;
+    top: 240px;
+    display: none;
+}
+
+.mono {
+    font-family: "Andale Mono", AndaleMono, monospace;
 }

@@ -7,7 +7,7 @@
     <h2>User details:</h2>
     <ul>
         <li><strong>Username:</strong> {{ user.username }}</li>
-        <li><strong>Secret:</strong> {{ user.secret }}</li>
+        <li><strong>Secret:</strong> <span class="mono">{{ user.secret }}</span></li>
     </ul>
 </div>
 
@@ -16,14 +16,19 @@
 <div id="send_note">
     <h2>Send a note:</h2>
     <form id="message_form">
-        <label for="to_username">Recipient's username:</label>
-        <input name="to_username" id="to_username" type="text" />
+        <label for="to_username">Recipient:</label>
+        <!--<input name="to_username" id="to_username" type="text" />-->
+        <select name="to_username" id="to_username">
+            {% for user in users %}
+                <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+        </select>
         <br />
         <label for="message">Message:</label>
         <textarea id="message" name="message"></textarea>
         <br />
         <input type="hidden" id="from_username" value="{{user.username}}" />
-        <input type="submit" value="Send note" />
+        <input type="submit" value="Send note" id="send_button" />
     </form>
     <div id="sent">Sent!</div>
     <div id="errors"><ul></ul></div>
