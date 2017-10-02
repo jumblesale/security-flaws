@@ -53,7 +53,7 @@ def step_impl(context, username, secret):
 @then(u'the user "{username}" exists')
 @given(u'the user "{username}" exists')
 def step_impl(context, username):
-    response = context.client.get('/users?username={}'.format(username))
+    response = context.client.get('/user?username={}'.format(username))
     assert_that(response.status_code, equal_to(200))
     data = json.loads(response.get_data())
     assert_that('username', is_in(data))
@@ -63,7 +63,7 @@ def step_impl(context, username):
 
 @then(u'the user with username "{username}" does not exist')
 def step_impl(context, username):
-    response = context.client.get('/users?username={}'.format(username))
+    response = context.client.get('/user?username={}'.format(username))
     assert_that(response.status_code, equal_to(404))
 
 
@@ -119,3 +119,14 @@ def step_impl(context, username, secret):
         'secret':   secret
     })
     context.response = context.client.post('/auth', data=payload)
+
+
+@when(u'I request a list of users')
+def step_impl(context):
+    context.response = context.client.get('/users')
+
+
+@then(u'I get {count} users')
+def step_impl(context, count):
+    data = json.loads(context.response.get_data())
+    assert_that(len(data['users']), equal_to(int(count)))

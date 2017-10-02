@@ -88,7 +88,7 @@ def _create_error_response(errors: [str]):
     )
 
 
-@app.route('/users', methods=['GET'])
+@app.route('/user', methods=['GET'])
 def get_user_by_username():
     username = request.args.get('username')
     if username is None:
@@ -109,6 +109,12 @@ def get_user_by_id(user_id):
             {'errors': ['User with id {} does not exist'.format(user_id)]}, 404
         )
     return create_json_response(user.__dict__, 200)
+
+
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = db.get_users()
+    return create_json_response({'users': users}, 200)
 
 
 @app.route('/login', methods=['GET'])

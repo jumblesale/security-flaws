@@ -243,3 +243,16 @@ def auth(username: str, secret: str) -> bool:
     sql = 'SELECT COUNT(*) as c FROM users WHERE username=? AND secret=?'
     result = query_db(sql, one=True, args=[username, secret])
     return result['c'] == 1
+
+
+def get_users() -> list:
+    """
+    get a list of all users. only retrieves user names
+    :return: a list of users in the db 
+    """
+    sql = 'SELECT `username` FROM users;'
+    result = query_db(sql)
+    users = []
+    for r in result:
+        users.append(r['username'])
+    return users

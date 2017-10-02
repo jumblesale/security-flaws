@@ -1,6 +1,6 @@
 Feature: managing user notes
 
-  Background: there is no data in the service
+  Background: there are existing users
     Given the server is running
       And there are fixtures in the db
 
