@@ -26,7 +26,7 @@ def encrypt_secret(plaintext: str) -> str:
 
 
 def validate_secret(plaintext: str) -> bool:
-    result = re.match('^[a-z0-9 ]{1,16}$', plaintext)
+    result = re.match('^[a-z]{1,5}$', plaintext)
     if result is None:
         return False
     return True
